@@ -1,10 +1,8 @@
 # ShrimpMaster
-An economy bot for Discord.  
+An economy bot for Discord, made with [discord.py](https://github.com/Rapptz/discord.py).  
+Note that you shouldn't run your own instances of ShrimpMaster, instead invite the already hosted version [here](https://discord.com/oauth2/authorize?client_id=824356265144614962&scope=bot&permissions=8).
 
-### Read this:
-This repository is not public for you to directly copy.  
-Please do not create direct clones of ShrimpMaster, instead, use this for reference only.
-
-### Other stuff
-Currently, ShrimpMaster is made in [discord.py](https://github.com/Rapptz/discord.py)  -   
-However, I'm working on [my own wrapper around the Discord API](https://github.com/jay3332/js-cord), so I might switch to that when it's finished.   
+## Links
+- [**Invite** (recommended)](https://discord.com/oauth2/authorize?client_id=824356265144614962&scope=bot&permissions=104188993)
+- [**Invite** (admin)](https://discord.com/oauth2/authorize?client_id=824356265144614962&scope=bot&permissions=8)  
+- [**Support Server**](https://discord.gg/AHHuVhTYAj)
