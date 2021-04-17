@@ -1,0 +1,6 @@
+.env
+.idea
+__pycache__/
+cogs/__pycache__/
+core/__pycache__/
+util/__pycache__/
