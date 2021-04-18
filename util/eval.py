@@ -141,7 +141,12 @@ class EvalManager:
 
                     result = await _coro
 
-                return await _send_result(stdout, result)
+                if out := await _send_result(stdout, result):
+                    try:
+                        await out.add_reaction(core.TRASH)
+                    except discord.Forbidden:
+                        pass
+                    return out
 
             except Exception as error:
                 try:
@@ -151,4 +156,5 @@ class EvalManager:
 
                 _base = (type(error), error, error.__traceback__)
                 _exception = ''.join(traceback.format_exception(*_base, limit=2))
-                await ctx.send(f"```py\n{_exception}```"[:2000])
+                message = await ctx.send(f"```py\n{_exception}```"[:2000])
+                await message.add_reaction(core.TRASH)

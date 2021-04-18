@@ -203,7 +203,8 @@ class ShrimpMaster(commands.Bot):
             case_insensitive=True,
             allowed_mentions=_allowed_mentions,
             intents=_intents,
-            help_command=ShrimpMasterHelpCommand()
+            help_command=ShrimpMasterHelpCommand(),
+            owner_id=414556245178056706
         )
 
         self.db = None
@@ -407,6 +408,10 @@ class ShrimpMaster(commands.Bot):
 
     async def on_command_error(self, ctx, error):
         await self.handler.handle_error(ctx, error)
+
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if str(payload.emoji) == constants.TRASH and payload.user_id == self.owner_id:
+            await self.http.delete_message(payload.channel_id, payload.message_id)
 
     async def send_message(self, channel_id, content, **kwargs):
         await self.http.send_message(channel_id, content, **kwargs)
