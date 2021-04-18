@@ -2,7 +2,7 @@ import core
 import discord
 from discord.ext.commands import max_concurrency, BucketType
 from util import converters
-from util.util import progress_bar, duration_strf
+from util.util import progress_bar, duration_strf, random
 from typing import Optional
 
 
@@ -130,10 +130,15 @@ class Factories(core.Cog):
             return await ctx.send(f"Your factory isn't active yet! Start it using **{ctx.clean_prefix}factory start**")
         if data['shrimp'] <= 0 and data['golden_shrimp'] <= 0:
             return await ctx.send("You have nothing to claim.")
+        if data['time_passed'] < 60:
+            return await ctx.send("You claimed shrimp within the last minute. Slow down, wouldn't you?")
         await ctx.cd()
 
         await ctx.db.set("factories", "golden_shrimp", ctx.author, 0)
         await ctx.db.set("factories", "last_claim", ctx.author, ctx.unix)
+        if random() < 0.03:
+            return await ctx.send("You claimed your shrimp, but the shrimp was rotten. You had to throw it out.")
+
         await ctx.db.add("users", "shrimp", ctx.author, data['shrimp'])
         await ctx.db.add("users", "golden_shrimp", ctx.author, data['golden_shrimp'])
 
@@ -173,7 +178,7 @@ class Factories(core.Cog):
         if not data['is_active']:
             return await ctx.send(f"Your factory isn't active yet! Start it using **{ctx.clean_prefix}factory start**")
 
-        price_increase_factor = 1.245
+        price_increase_factor = 1.255
         upgrade_column_buffer = "shrimp_per_minute"
         database_column_buffer = "spm_upgrade_price"
         upgrade_price = round(cumulative(data[database_column_buffer], price_increase_factor, quantity))
@@ -185,7 +190,7 @@ class Factories(core.Cog):
         await ctx.db.add("users", "shrimp", ctx.author, -upgrade_price)
         await ctx.db.set("factories", "last_claim", ctx.author, ctx.unix)
 
-        new = data[upgrade_column_buffer] * (upgrade_factor := 1.25)
+        new = data[upgrade_column_buffer] * (upgrade_factor := 1.232)
         for _ in range(quantity-1):
             new *= upgrade_factor
         await ctx.db.set("factories", upgrade_column_buffer, ctx.author, new := round(new))
@@ -221,7 +226,7 @@ class Factories(core.Cog):
         if not data['is_active']:
             return await ctx.send(f"Your factory isn't active yet! Start it using **{ctx.clean_prefix}factory start**")
 
-        price_increase_factor = 1.245
+        price_increase_factor = 1.255
         upgrade_column_buffer = "capacity"
         database_column_buffer = "capacity_upgrade_price"
         upgrade_price = round(cumulative(data[database_column_buffer], price_increase_factor, quantity))
@@ -233,7 +238,7 @@ class Factories(core.Cog):
         await ctx.db.add("users", "shrimp", ctx.author, -upgrade_price)
         await ctx.db.set("factories", "last_claim", ctx.author, ctx.unix)
 
-        new = data[upgrade_column_buffer] * (upgrade_factor := 1.25)
+        new = data[upgrade_column_buffer] * (upgrade_factor := 1.232)
         for _ in range(quantity-1):
             new *= upgrade_factor
         await ctx.db.set("factories", upgrade_column_buffer, ctx.author, new := round(new))

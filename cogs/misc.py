@@ -1,9 +1,9 @@
+from io import BytesIO
+from PIL import Image
 import core
 import time
-import typing
 import discord
-from discord.ext import commands
-from util import util, paginators, converters
+from util import util, paginators, graphs
 
 
 class Misc(core.Cog):
@@ -136,6 +136,29 @@ class Misc(core.Cog):
         _embed.description = "Command usage since my last startup."
         _embed.description += f"\nTotal: **{ctx.bot.handler.commands_handled:,}**"
         await paginators.newline_paginate_via_field(ctx, _embed, lines, "Breakdown", footer="Page {page}")
+
+
+    @core.command(
+        name="growth",
+        description="Sends a graph of ShrimpMaster's overall growth.",
+        cooldown=10
+    )
+    async def _growth(self, ctx):
+        await ctx.cd()
+        entries = await ctx.bot.db.fetch("SELECT * FROM guild_stats ORDER BY time_joined ASC LIMIT 50")
+        dates = [entry['time_joined'] for entry in entries]
+        corres = [entry['guild_count'] for entry in entries]
+
+        with Image.new("RGB", (30, 30), (0, 0, 0)) as background:
+            buffer = BytesIO()
+            background.save(buffer, format="PNG")
+            buffer.seek(0)
+
+        color = discord.Colour.from_rgb(255, 255, 255)
+        await graphs.send_graph_to(
+            ctx, buffer, dates, corres, content="Dates are shown in UTC in the format `month/day`",
+            y_axis="Guild Count", color=color
+        )
 
 
 def setup(client):

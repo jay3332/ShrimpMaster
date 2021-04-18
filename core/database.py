@@ -43,6 +43,14 @@ async def setup(db):
         reason text not null default 'No reason provided.',
         expires bigint not null default 0
     );
+    CREATE TABLE IF NOT EXISTS guild_stats (
+        guild_id bigint unique,
+        time_joined timestamp,
+        guild_count integer,
+        invite text not null default '',
+        is_removal boolean not null default false,
+        message_id bigint
+    );
     CREATE TABLE IF NOT EXISTS cooldowns (
         user_id bigint unique
     );

@@ -1,3 +1,5 @@
+import asyncio
+import functools
 import re
 import math
 import time
@@ -241,6 +243,18 @@ def escape_markdown(s):
         .replace(":", "\\:")
         .replace("@", "\\@")
     )
+
+
+def in_executor(loop=None):
+    loop = loop or asyncio.get_event_loop()
+
+    def inner_function(func):
+        @functools.wraps(func)
+        def function(*args, **kwargs):
+            partial = functools.partial(func, *args, **kwargs)
+            return loop.run_in_executor(None, partial)
+        return function
+    return inner_function
 
 
 def progress_bar(

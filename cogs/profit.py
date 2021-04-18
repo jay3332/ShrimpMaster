@@ -219,9 +219,9 @@ class Profit(core.Cog):
         _ = await ctx.send(f"{core.LOADING}")
         for __ in range(5):
             if util.random()>(
-                .13 if not _rig else 0
+                .15 if not _rig else 0
             ):
-                _multiplier += util.random(.16, .3)
+                _multiplier += util.random(.14, .28)
 
                 embed = _embed()
                 embed.description = f"{core.LOADING} Investing..."
