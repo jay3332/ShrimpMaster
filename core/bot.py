@@ -22,21 +22,18 @@ from discord.ext import commands
 dotenv.load_dotenv()
 
 
-def get_prefix(client, message):
-    async def wrapper():
-        fallback = os.urandom(32).hex()
+async def get_prefix(client, message):
+    fallback = os.urandom(32).hex()
 
-        _prefixes = await client.db.get("guilds", message.guild, "prefixes")
-        _prefixes = _prefixes or ["s."]
+    _prefixes = await client.db.get("guilds", message.guild, "prefixes")
+    _prefixes = _prefixes or ["s."]
 
-        # regex compiling for case insensitivity
-        comp = re.compile("^(" + "|".join(map(re.escape, _prefixes)) + ").*", flags=re.I)
-        match = comp.match(message.content)
+    # regex compiling for case insensitivity
+    comp = re.compile("^(" + "|".join(map(re.escape, _prefixes)) + ").*", flags=re.I)
+    match = comp.match(message.content)
 
-        if match is not None: return match.group(1)
-        return commands.when_mentioned_or(fallback)(client, message)
-
-    return client.loop.create_task(wrapper())
+    if match is not None: return match.group(1)
+    return commands.when_mentioned_or(fallback)(client, message)
 
 
 class Gist:
