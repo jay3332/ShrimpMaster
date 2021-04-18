@@ -29,7 +29,8 @@ async def setup(db):
         expanded_vault_space bigint not null default 0,
         nets bigint not null default 1,
         locked boolean not null default false,
-        mod boolean not null default false
+        mod boolean not null default false,
+        shield_active bigint not null default 0
     );
     CREATE TABLE IF NOT EXISTS premium (
         user_id bigint unique,
@@ -112,7 +113,8 @@ async def setup(db):
                      "alter table users add column if not exists expanded_vault_space bigint not null default 0;"
                      "alter table users add column if not exists nets bigint not null default 1;"
                      "alter table users add column if not exists locked boolean not null default false;"
-                     "alter table users add column if not exists mod boolean not null default false;")
+                     "alter table users add column if not exists mod boolean not null default false,"
+                     "add column if not exists shield_active bigint not null default 0;")
 
     await items.add_items_into_database(db)
 

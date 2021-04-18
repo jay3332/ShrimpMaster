@@ -14,19 +14,20 @@ class Timer:
         self.manager = manager
         self.finished = False
 
-        extra = loads(record['extra'])
-        self.args = extra.get('args', [])
-        self.kwargs = extra.get('kwargs', {})
         self.event = record['event']
         self.created_at = record['created']
         self.expires = record['expires']
+
+        extra = loads(record['extra'])
+        self.args = extra.get('args', [])
+        self.kwargs = extra.get('kwargs', {})
 
     async def end(self):
         """ Ends a timer early """
         await self.manager.call_timer(self)
 
     @classmethod
-    def temporary(cls, manager, *, expires, created, event, args, kwargs):
+    def partial(cls, manager, *, expires, created, event, args, kwargs):
         pseudo = {
             'id': None,
             'extra': dumps({'args': args, 'kwargs': kwargs}),
@@ -115,7 +116,7 @@ class BotTimerManager:
         except KeyError:
             now = datetime.datetime.utcnow()
 
-        timer = Timer.temporary(self, event=event, args=args, kwargs=kwargs, expires=when, created=now)
+        timer = Timer.partial(self, event=event, args=args, kwargs=kwargs, expires=when, created=now)
         delta = (when - now).total_seconds()
         if delta <= 30:
             self.client.loop.create_task(self.dispatch_short_timer(delta, timer))

@@ -14,7 +14,7 @@ from json import dumps
 from util.timers import BotTimerManager
 from util.util import duration_strf
 from util.path import route
-# from .help import ShrimpMasterHelpCommand
+from .help import ShrimpMasterHelpCommand
 from . import database, constants, handler
 from discord.ext import commands
 
@@ -202,7 +202,7 @@ class ShrimpMaster(commands.Bot):
             case_insensitive=True,
             allowed_mentions=_allowed_mentions,
             intents=_intents,
-            help_command=None  # ShrimpMasterHelpCommand()
+            help_command=ShrimpMasterHelpCommand()
         )
 
         self.db = None

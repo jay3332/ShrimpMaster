@@ -43,10 +43,11 @@ class PlayerDeck:
 
     @property
     def worth(self):
-        _total = 0
-        for card in sorted(self.cards, key=lambda c: c.value != "A"):
-            _total += card.worth(_total)
-        return _total
+        aces = sum(c.value=="A" for c in self.cards)
+        base_sum = sum(c.raw_worth for c in self.cards)
+        for _ in range(aces):
+            base_sum += 10 if base_sum <= 11 else 0
+        return base_sum
 
     @property
     def text(self):
@@ -74,6 +75,10 @@ class Card:
 
     def __str__(self):
         return f"{SUIT_EMOJIS[SUITS.index(self.suit)]} {self.value}"
+
+    @property
+    def raw_worth(self):
+        return VALUES[self.value]
 
     def worth(self, total):
         if self.value != "A" or total >= 11:
@@ -181,13 +186,10 @@ class Blackjack:
         _field_kwargs = {"name": ["Draw!", "You won!", "You lost!", None][winner]}
 
         _brief: str = ""
-        if action == "e":
-            _brief = "You ended the game."
-
         if action == "bj":
             _brief = "**Blackjack!**"
 
-        if action == "bu":
+        elif action == "bu":
             _brief = [
                 "We both bust!",
                 "Bot bust!",
@@ -195,7 +197,10 @@ class Blackjack:
                 None
             ][winner]
 
-        if action == "hi":
+        elif action == "e":
+            _brief = "You ended the game."
+
+        elif action == "hi":
             _brief = [
                 "We got equal value!",
                 "Your cards were worth more than mine.",
@@ -203,7 +208,7 @@ class Blackjack:
                 None
             ][winner]
 
-        if action == "to":
+        elif action == "to":
             _brief = "Session timed out."
 
         _desc = [

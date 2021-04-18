@@ -435,6 +435,8 @@ class Profit(core.Cog):
             return await ctx.send(f"You need at least {core.SHRIMP} **250 shrimp** to steal from others.")
 
         await ctx.cd()
+        shield_active = ctx.unix <= await ctx.db.get("users", user, "shield_active")
+
         if await ctx.db.get("users", user, "locked"):
             fine = max(250, round(util.random(.3, .75)*_author_shrimp))
             await ctx.db.set("users", "locked", user, False)
@@ -443,8 +445,11 @@ class Profit(core.Cog):
             return await ctx.send(f"That user has a lock active. Your rob failed and you lost {core.SHRIMP} **{fine:,} shrimp**.")
 
         _ = await ctx.send(f"{core.LOADING} Robbing {user.name}...")
-        if util.random() < core.BASE_ROB_SUCCESS:
+        _rob_success_rate = core.BASE_ROB_SUCCESS
+        if shield_active: _rob_success_rate /= 2
+        if util.random() < _rob_success_rate:
             _percent = util.random(.2, .7)
+            if shield_active: _percent /= 2
             _amount = int(_user_shrimp*_percent)
             await ctx.db.add("users", "shrimp", ctx.author, _amount)
             await ctx.db.add("users", "shrimp", user, -_amount)

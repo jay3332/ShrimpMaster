@@ -1,4 +1,4 @@
-from util.util import random, Loading
+from util.util import random, Loading, duration_strf
 from util.path import route
 from discord.ext.commands import Converter
 import discord
@@ -330,6 +330,45 @@ class Items:
         type=Types.COLLECTABLE,
         usable=False
     )
+
+    shield = Item(
+        id="shield",
+        name="Shield",
+        emoji="🛡",
+        brief="Use these for more protection against robs.",
+        description=(
+            "When these shields are used (activated), for 2-4 hours, when "
+            "people try robbing you, they will have a 50% higher chance of failing, and "
+            "if they do manage to rob you, they will only get 50% of their payouts."
+        ),
+        price=215000,
+        type=Types.POWERUP,
+        use_multiple=False
+    )
+
+    @shield.callback
+    async def _use_shield(self, ctx, sh: Item):
+        if ctx.unix <= await ctx.db.get("users", ctx.author, "shield_active"):
+            await ctx.send("Your shield is already active.")
+            raise ItemUsageFailure()
+        _ = await ctx.send(f"{sh.emoji} Using your shield...")
+        await asyncio.sleep(hours := random(2., 4.))
+        seconds = round(hours * 3600)
+        from_now = ctx.unix + seconds
+        await ctx.db.set("users", "shield_active", ctx.author, from_now)
+        await ctx.maybe_edit(
+            _, f"{sh.emoji} You activated your shield and will have extra protection "
+               f"from robs for **{duration_strf(seconds, 2)}**.",
+            allowed_mentions=discord.AllowedMentions.none()
+        )
+
+    @shield.remove
+    async def _remove_shield(self, ctx, sh: Item):
+        if ctx.unix > await ctx.db.get("users", ctx.author, "shield_active"):
+            await ctx.send("You don't have an active shield.")
+        await ctx.db.set("users", "shield_active", ctx.author, 0)
+        await ctx.send(f"{sh.emoji} Successfully de-activated your shield.")
+
 
     fish = Fish(
         id="fish",
