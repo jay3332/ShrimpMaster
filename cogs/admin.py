@@ -1,6 +1,5 @@
 import aiohttp
 import core
-import datetime
 import discord
 import tabulate
 import importlib
@@ -462,6 +461,17 @@ class Admin(core.Cog):
         await ctx.db.execute("DELETE FROM blacklists WHERE user_id=$1", user.id)
         await ctx.send(f"Unblacklisted **{user.name}**.")
         await ctx.bot.dm(user, f"You have been manually unblacklisted by a bot moderator.")
+
+    @core.command(
+        name="eval",
+        aliases=("exec", "evaluate"),
+        perms="Owner",
+        description="Evaluate Python code.",
+        hidden=True
+    )
+    async def _eval(self, ctx, *, code):
+        code = util.strip_codeblocks(code)
+        await ctx.eval(code)
 
 
 def setup(client):

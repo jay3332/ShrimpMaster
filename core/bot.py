@@ -11,6 +11,7 @@ import datetime
 import platform
 
 from json import dumps
+from util.eval import EvalManager
 from util.timers import BotTimerManager
 from util.util import duration_strf
 from util.path import route
@@ -192,6 +193,9 @@ class Context(commands.Context):
         except (AttributeError, discord.NotFound, discord.Forbidden):
             pass
 
+    async def eval(self, code):
+        return await self.bot.evaluator.evaluate(self, code)
+
 
 class ShrimpMaster(commands.Bot):
     def __init__(self):
@@ -207,6 +211,7 @@ class ShrimpMaster(commands.Bot):
 
         self.db = None
         self.timers = None
+        self.evaluator = None
         self.command_usage = {}
         self.up_since = datetime.datetime.utcnow()
         self.handler = handler.Handler()
@@ -277,6 +282,7 @@ class ShrimpMaster(commands.Bot):
         self._setup_public_env()
         self.loop.run_until_complete(self._setup_database())
         self.timers = BotTimerManager(self)
+        self.evaluator = EvalManager(self)
         self._setup_custom_methods()
         self._setup_cogs()
         self._load_crime_messages()
