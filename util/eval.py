@@ -1,3 +1,4 @@
+import ast
 import traceback
 import contextlib
 import textwrap
@@ -10,6 +11,19 @@ import aiohttp
 import import_expression
 from discord.ext import commands
 from io import StringIO
+
+
+def insert_returns(body):
+    if isinstance(body[-1], ast.Expr):
+        body[-1] = ast.Return(body[-1].value)
+        ast.fix_missing_locations(body[-1])
+
+    if isinstance(body[-1], ast.If):
+        insert_returns(body[-1].body)
+        insert_returns(body[-1].orelse)
+
+    if isinstance(body[-1], (ast.With, ast.AsyncWith)):
+        insert_returns(body[-1].body)
 
 
 class Scope:
@@ -90,13 +104,46 @@ class EvalManager:
             "__scope": self._scope
         }
 
+    @staticmethod
+    def better_exec(script, globals_=None, locals_=None):
+        parsed = import_expression.parse(script)
+        base_function = "async def __evaluate_code(): pass"
+        parsed_function = import_expression.parse(base_function)
+
+        for node in parsed.body:
+            ast.increment_lineno(node)
+
+        def check_for_yield(payload):
+            if isinstance(payload, (list, tuple)):
+                for node_ in payload:
+                    if check_for_yield(node_):
+                        return True
+            if isinstance(payload, (ast.Yield, ast.YieldFrom)):
+                return True
+            if hasattr(payload, 'body'):
+                for node_ in payload.body:
+                    if check_for_yield(node_):
+                        return True
+            if hasattr(payload, 'value'):
+                if check_for_yield(payload.value):
+                    return True
+            return False
+
+        if not check_for_yield(parsed.body):
+            insert_returns(parsed.body)
+
+        parsed_function.body[0].body = parsed.body
+
+        import_expression.exec(
+            import_expression.compile(parsed_function, filename="<evaluator>", mode='exec'),
+            globals_, locals_
+        )
+
+
     async def evaluate(self, ctx, code):
         _env = self.get_env(ctx)
         _scope = self._scope
         _scope.update_globals(_env)
-
-        block = "async def __evaluate_code():\n"
-        block += textwrap.indent(code, "  ")  # 2 spaces because that's how discord does it
 
         async def _send_result(stdout_, result_):
             try:
@@ -129,7 +176,7 @@ class EvalManager:
 
         with StringIO() as stdout:
             try:
-                import_expression.exec(block, _scope.globals, _scope.locals)
+                self.better_exec(code, _scope.globals, _scope.locals)
                 with contextlib.redirect_stdout(stdout):
                     _function = _scope.locals['__evaluate_code']
                     _coro = _function()
