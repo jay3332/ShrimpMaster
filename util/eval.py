@@ -1,7 +1,6 @@
 import ast
 import traceback
 import contextlib
-import textwrap
 import core
 import discord
 import util
@@ -11,6 +10,7 @@ import aiohttp
 import import_expression
 from discord.ext import commands
 from io import StringIO
+from util.paginators import auto_paginate
 
 
 def insert_returns(body):
@@ -161,6 +161,7 @@ class EvalManager:
                 return await ctx.send("\u200b")
 
             self._last_result = result_
+            token = ctx.bot.http.token
 
             if isinstance(result_, discord.Embed):
                 return await ctx.send(embed=result_)
@@ -169,9 +170,14 @@ class EvalManager:
                 return await ctx.send(file=result_)
 
             if isinstance(result_, (str, int)):
-                return await ctx.send(result_)
+                to_be_sent = str(result_).replace(token, "<token>")
+            else:
+                to_be_sent = repr(result_).replace(token, "<token>")
 
-            return await ctx.send(repr(result_))
+            if len(to_be_sent) < 1990:
+                return await ctx.send(f'```py\n{to_be_sent}```')
+
+            return await auto_paginate(ctx, to_be_sent, prefix="```py\n", suffix="```", max_size=1990, wrap_at=('',))
 
 
         with StringIO() as stdout:

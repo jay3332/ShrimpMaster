@@ -637,3 +637,17 @@ def explosion(b):
     save_transparent_gif(frames, durations, buffer)
     buffer.seek(0)
     return buffer
+
+
+def reverse_(b):
+    im = _pil_image_from_bytes(b)
+    frames = []
+
+    for frame in ImageSequence.Iterator(im):
+        frames.insert(0, frame.copy())
+
+    buffer = BytesIO()
+    save_transparent_gif(frames, im.info.get("duration", 64), buffer)
+    buffer.seek(0)
+    del frames
+    return buffer

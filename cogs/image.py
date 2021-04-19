@@ -645,6 +645,30 @@ class Image(core.Cog):
             file=discord.File(_buffer, f"ShrimpMaster_frame{index}.png")
         )
 
+    @core.command(
+        name="reverse",
+        aliases=("rewind", "rev"),
+        bot_perms=("Send Messages", "Attach Files"),
+        usage="[url | image]",
+        description="Reverses a GIF.",
+        examples=(
+            "reverse",
+            "reverse @User"
+        ),
+        cooldown=(15, 8)
+    )
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @core.check(bot_perms=("send_messages", "attach_files"))
+    async def _seek(self, ctx, *, query=None):
+        await ctx.cd()
+        async with Loading(ctx):
+            _image = await get_image(ctx, query, png=False)
+            _buffer = await ctx.bot.loop.run_in_executor(None, image.reverse_, _image)
+        await ctx.send(
+            content=f"{core.CHECK} Image result for **{ctx.author.name}**",
+            file=discord.File(_buffer, f"ShrimpMaster_reversed.gif")
+        )
+
 
 
 def setup(client):

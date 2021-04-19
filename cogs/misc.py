@@ -149,11 +149,14 @@ class Misc(core.Cog):
         dates = [entry['time_joined'] for entry in entries]
         corres = [entry['guild_count'] for entry in entries]
 
+        dates.append(ctx.now)
+        corres.append(len(ctx.bot.guilds))
+
         with Image.new("RGB", (30, 30), (0, 0, 0)) as background:
             buffer = BytesIO()
             background.save(buffer, format="PNG")
             buffer.seek(0)
-
+        
         color = discord.Colour.from_rgb(255, 255, 255)
         await graphs.send_graph_to(
             ctx, buffer, dates, corres, content="Dates are shown in UTC in the format `month/day`",

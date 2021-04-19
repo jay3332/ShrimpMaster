@@ -1,5 +1,6 @@
 import discord
 from discord.ext import menus
+from jishaku.paginators import WrappedPaginator, PaginatorInterface
 
 
 class MenuPages(menus.Menu):
@@ -216,3 +217,11 @@ async def newline_paginate(ctx, base_embed, lines, *, per_page=10, footer=None, 
     lines = [(base_embed, f) for f in lines]
     menu = MenuPages(NewlineEmbedPageSource(lines, per_page=per_page, footer=footer, prefix=prefix, suffix=suffix))
     await menu.start(ctx)
+
+
+async def auto_paginate(ctx, text, prefix='```', suffix='```', max_size=2000, wrap_at=(' ', '\n')):
+    paginator = WrappedPaginator(prefix=prefix, suffix=suffix, max_size=max_size, wrap_on=wrap_at)
+    paginator.add_line(text)
+    interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+    await interface.send_to(ctx)
+    return interface.message
